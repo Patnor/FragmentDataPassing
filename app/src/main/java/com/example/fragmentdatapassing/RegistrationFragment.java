@@ -1,64 +1,99 @@
 package com.example.fragmentdatapassing;
 
+import android.content.Context;
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link RegistrationFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
+import com.example.fragmentdatapassing.databinding.FragmentRegistrationBinding;
+
+
 public class RegistrationFragment extends Fragment {
 
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
+    FragmentRegistrationBinding binding;
 
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
+    private String selectedDepartment = null;
+
+    public void setSelectedDepartment(String department){
+        this.selectedDepartment = department;
+    }
 
     public RegistrationFragment() {
         // Required empty public constructor
     }
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment RegistrationFragment.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static RegistrationFragment newInstance(String param1, String param2) {
-        RegistrationFragment fragment = new RegistrationFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
-    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
+
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+
+        binding = FragmentRegistrationBinding.inflate(inflater, container, false);
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_registration, container, false);
+        return binding.getRoot();
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        getActivity().setTitle("Registration");
+
+        binding.buttonSelectDept.setOnClickListener(v -> mRegistrationFragmentListener.gotoDepartment());
+
+        binding.buttonSubmit.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String name = binding.editTextName.getText().toString();
+                String email = binding.editTextEmail.getText().toString();
+                String id = binding.editTextID.getText().toString();
+
+                if(name.isEmpty()){
+                    Toast.makeText(getActivity(), "Enter Valid name!", Toast.LENGTH_SHORT).show();
+                }else if (email.isEmpty()){
+                    Toast.makeText(getActivity(), "Enter Valid email!", Toast.LENGTH_SHORT).show();
+                }else if (id.isEmpty()){
+                    Toast.makeText(getActivity(), "Enter Valid ID!", Toast.LENGTH_SHORT).show();
+                }else if(selectedDepartment == null){
+                    Toast.makeText(getActivity(), "Select a department!", Toast.LENGTH_SHORT).show();
+                }else{
+
+                    Profile profile = new Profile(name, email, id, selectedDepartment);
+                    mRegistrationFragmentListener.gotoProfile(profile);
+                }
+
+            }
+        });
+
+        if(selectedDepartment == null)
+            binding.textViewSelectedDept.setText("");
+        else
+            binding.textViewSelectedDept.setText(selectedDepartment);
+    }
+
+    RegistrationFragmentListener mRegistrationFragmentListener;
+
+    @Override
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+        mRegistrationFragmentListener = (RegistrationFragmentListener) context;
+    }
+
+    interface RegistrationFragmentListener{
+        void gotoDepartment();
+
+        void gotoProfile(Profile profile);
     }
 }
